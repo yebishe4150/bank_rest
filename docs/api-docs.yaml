@@ -1,0 +1,480 @@
+openapi: 3.0.1
+info:
+  title: Bank REST API
+  description: API для управления картами и переводами
+  version: 1.0.0
+servers:
+- url: http://localhost:8080
+  description: Generated server url
+paths:
+  /cards/{cardId}/block:
+    post:
+      tags:
+      - card-controller
+      summary: Заблокировать карту
+      operationId: block
+      parameters:
+      - name: cardId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: Карта заблокирована
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/BaseResponse"
+  /cards/{cardId}/balance:
+    post:
+      tags:
+      - card-controller
+      summary: Изменить баланс карты
+      operationId: changeBalance
+      parameters:
+      - name: cardId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: amount
+        in: query
+        required: true
+        schema:
+          type: number
+      responses:
+        "200":
+          description: Баланс изменён
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/BaseResponse"
+  /cards/transfer:
+    post:
+      tags:
+      - transfer-controller
+      summary: Перевод денег между картами пользователя
+      operationId: transfer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TransferRequest"
+        required: true
+      responses:
+        "200":
+          description: Перевод выполнен
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BaseResponse"
+  /cards/create/{userId}:
+    post:
+      tags:
+      - card-controller
+      summary: Создать карту пользователю (ADMIN)
+      operationId: createCard
+      parameters:
+      - name: userId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: Карта создана
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BaseResponse"
+  /auth/register:
+    post:
+      tags:
+      - auth-controller
+      summary: Регистрация пользователя
+      operationId: register
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegisterRequest"
+        required: true
+      responses:
+        "200":
+          description: Пользователь зарегистрирован
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BaseResponse"
+  /auth/register-admin:
+    post:
+      tags:
+      - auth-controller
+      summary: Регистрация администратора
+      operationId: registerAdmin
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegisterRequest"
+        required: true
+      responses:
+        "200":
+          description: Админ создан
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BaseResponse"
+  /auth/login:
+    post:
+      tags:
+      - auth-controller
+      summary: Авторизация
+      operationId: login
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginRequest"
+        required: true
+      responses:
+        "200":
+          description: Успешный вход
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BaseResponse"
+  /admin/users/{id}/role:
+    post:
+      tags:
+      - Администрирование пользователей
+      summary: Изменить роль пользователя
+      operationId: changeRole
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: role
+        in: query
+        required: true
+        schema:
+          type: string
+          enum:
+          - USER
+          - ADMIN
+      responses:
+        "200":
+          description: Роль изменена
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BaseResponse"
+  /admin/users/create:
+    post:
+      tags:
+      - Администрирование пользователей
+      summary: Создать пользователя
+      operationId: createUser
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateUserRequest"
+        required: true
+      responses:
+        "200":
+          description: Пользователь создан
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BaseResponse"
+  /admin/cards/{cardId}/block:
+    post:
+      tags:
+      - Администрирование карт
+      summary: Заблокировать карту
+      operationId: blockCard
+      parameters:
+      - name: cardId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: Карта заблокирована
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BaseResponse"
+  /admin/cards/{cardId}/activate:
+    post:
+      tags:
+      - Администрирование карт
+      summary: Активировать карту
+      operationId: activateCard
+      parameters:
+      - name: cardId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: Карта активирована
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BaseResponse"
+  /me:
+    get:
+      tags:
+      - user-controller
+      summary: Получить профиль текущего пользователя
+      operationId: me
+      responses:
+        "200":
+          description: Профиль пользователя
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BaseResponse"
+        "401":
+          description: Не авторизован
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/BaseResponseUserDto"
+  /cards/my:
+    get:
+      tags:
+      - card-controller
+      summary: Получить свои карты
+      operationId: getMyCards
+      parameters:
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 0
+      - name: size
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 10
+      - name: status
+        in: query
+        required: false
+        schema:
+          type: string
+          enum:
+          - ACTIVE
+          - BLOCKED
+          - EXPIRED
+      responses:
+        "200":
+          description: Список карт
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/BaseResponse"
+  /admin/users:
+    get:
+      tags:
+      - Администрирование пользователей
+      summary: Получить список всех пользователей
+      operationId: getUsers
+      responses:
+        "200":
+          description: Список пользователей
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BaseResponse"
+  /admin/cards:
+    get:
+      tags:
+      - Администрирование карт
+      summary: Получить список всех карт
+      operationId: getAllCards
+      parameters:
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 0
+      - name: size
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 10
+      - name: status
+        in: query
+        required: false
+        schema:
+          type: string
+          enum:
+          - ACTIVE
+          - BLOCKED
+          - EXPIRED
+      responses:
+        "200":
+          description: Список карт
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BaseResponse"
+  /admin/cards/{cardId}:
+    delete:
+      tags:
+      - Администрирование карт
+      summary: Удалить карту
+      operationId: deleteCard
+      parameters:
+      - name: cardId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: Карта удалена
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BaseResponse"
+components:
+  schemas:
+    BaseResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Уникальный идентификатор ответа
+          format: uuid
+          example: d290f1ee-6c54-4b01-90e6-d701748f0851
+        body:
+          type: object
+          description: Тело ответа
+        message:
+          type: string
+          description: Сообщение об ошибке
+          example: Invalid request
+      description: Базовый API-ответ
+    TransferRequest:
+      required:
+      - amount
+      - fromCardId
+      - toCardId
+      type: object
+      properties:
+        fromCardId:
+          type: string
+          description: ID карты-отправителя
+          format: uuid
+        toCardId:
+          type: string
+          description: ID карты-получателя
+          format: uuid
+        amount:
+          type: number
+          description: Сумма перевода (должна быть > 0)
+          example: 50.0
+      description: Запрос на перевод между картами
+    RegisterRequest:
+      required:
+      - password
+      - username
+      type: object
+      properties:
+        username:
+          type: string
+          description: Email
+          example: newuser@example.com
+        password:
+          maxLength: 50
+          minLength: 6
+          type: string
+          description: Пароль (от 6 до 50)
+          example: qwerty123
+      description: Запрос на регистрацию
+    LoginRequest:
+      required:
+      - password
+      - username
+      type: object
+      properties:
+        username:
+          type: string
+          description: Email
+          example: user@example.com
+        password:
+          type: string
+          description: Пароль
+          example: "12345678"
+      description: Запрос на вход пользователя
+    CreateUserRequest:
+      required:
+      - password
+      - username
+      type: object
+      properties:
+        username:
+          type: string
+          description: Email пользователя
+          example: user@example.com
+        password:
+          type: string
+          description: Пароль
+          example: "12345678"
+      description: Запрос на создание пользователя
+    BaseResponseUserDto:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Уникальный идентификатор ответа
+          format: uuid
+          example: d290f1ee-6c54-4b01-90e6-d701748f0851
+        body:
+          $ref: "#/components/schemas/UserDto"
+        message:
+          type: string
+          description: Сообщение об ошибке
+          example: Invalid request
+      description: Базовый API-ответ
+    UserDto:
+      type: object
+      properties:
+        id:
+          type: string
+          description: ID пользователя
+          format: uuid
+          example: 21f4f8cf-0a78-4bd9-b5fb-08f7af81bae4
+        username:
+          type: string
+          description: Username пользователя
+          example: user@example.com
+        role:
+          type: string
+          description: Роль пользователя
+          example: ADMIN
+      description: Информация о пользователе

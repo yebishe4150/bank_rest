@@ -1,0 +1,13 @@
+databaseChangeLog:
+
+  - changeSet:
+      id: create_timestamptz_h2_domain
+      author: test
+      changes:
+        - sql:
+            dbms: h2
+            sql: CREATE DOMAIN IF NOT EXISTS TIMESTAMPTZ AS TIMESTAMP;
+
+  - include:
+      file: "../../../main/resources/db/migration/db.changelog-master.yaml"
+      relativeToChangelogFile: true
